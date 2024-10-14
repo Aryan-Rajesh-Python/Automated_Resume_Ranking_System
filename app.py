@@ -4,7 +4,6 @@ import PyPDF2
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import re
-import csv
 import os
 
 app = Flask(__name__)
@@ -37,7 +36,7 @@ def extract_entities(text):
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    results = []
+    global results  # Ensure results is accessible in the download route
     if request.method == 'POST':
         job_description = request.form['job_description']
         resume_files = request.files.getlist('resume_files')
@@ -72,12 +71,17 @@ def index():
         # Sort resumes by similarity score
         ranked_resumes.sort(key=lambda x: x[2], reverse=True)
 
-        results = ranked_resumes
+        # Append the newly ranked resumes to the results
+        results.extend(ranked_resumes)
 
     return render_template('index.html', results=results)
 
 @app.route('/download_csv')
 def download_csv():
+    global results  # Use the global results variable
+    if not results:
+        return "No results available to download."
+
     # Generate the CSV content
     csv_content = "Rank,Name,Email,Similarity\n"
     for rank, (names, emails, similarity) in enumerate(results, start=1):
@@ -85,9 +89,9 @@ def download_csv():
         email = emails[0] if emails else "N/A"
         csv_content += f"{rank},{name},{email},{similarity:.2f}\n"
 
-    # Create a temporary file to store the CSV content
+    # Create a temporary file to store the CSV content with UTF-8 encoding
     csv_filename = "ranked_resumes.csv"
-    with open(csv_filename, "w") as csv_file:
+    with open(csv_filename, "w", encoding='utf-8') as csv_file:
         csv_file.write(csv_content)
 
     # Send the file for download

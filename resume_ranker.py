@@ -5,18 +5,16 @@ from sklearn.metrics.pairwise import cosine_similarity
 import re
 import csv
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 
 app = Flask(__name__)
 
 # Load spaCy NER model
 nlp = spacy.load("en_core_web_sm")
 
-# Get job description from user input
-job_description = input("Enter the job description: ")
-
-# List of resume PDF file paths (this will be populated dynamically)
-resume_paths = []  # This will be populated by user uploads
+# Ensure uploads directory exists
+if not os.path.exists("uploads"):
+    os.makedirs("uploads")
 
 # Extract text from PDFs
 def extract_text_from_pdf(pdf_path):
@@ -24,15 +22,14 @@ def extract_text_from_pdf(pdf_path):
         pdf_reader = PyPDF2.PdfReader(pdf_file)
         text = ""
         for page in pdf_reader.pages:
-            text += page.extract_text()
+            text += page.extract_text() or ""
         return text
 
 # Extract emails and names using spaCy NER
 def extract_entities(text):
     emails = re.findall(r'\S+@\S+', text)  # Extract emails using regex
-    names = re.findall(r'^([A-Z][a-z]+)\s+([A-Z][a-z]+)', text)  # Extract names
-    if names:
-        names = [" ".join(names[0])]
+    doc = nlp(text)
+    names = [ent.text for ent in doc.ents if ent.label_ == "PERSON"]
     return emails, names
 
 # Store feedback
@@ -44,9 +41,11 @@ def store_feedback(feedback_text):
 # Main function to analyze resumes
 @app.route("/", methods=["POST"])
 def analyze_resumes():
-    global resume_paths
-    job_description = request.form["job_description"]
+    job_description = request.form.get("job_description", "").strip()
     resume_files = request.files.getlist("resume_files")
+
+    if not resume_files:
+        return jsonify({"error": "No resume files uploaded."}), 400
 
     # Save uploaded resume files
     resume_paths = []
@@ -82,17 +81,25 @@ def analyze_resumes():
             email = emails[0] if emails else "N/A"
             csv_writer.writerow([rank, name, email, similarity])
 
-    return ranked_resumes  # Return ranked results for rendering
+    return jsonify({"message": "Resumes analyzed successfully!", "results": ranked_resumes}), 200
 
 # API endpoint to receive feedback
 @app.route("/feedback", methods=["POST"])
 def feedback():
     data = request.get_json()
-    feedback_text = data.get("feedback")
+    feedback_text = data.get("feedback", "").strip()
     if feedback_text:
         store_feedback(feedback_text)
         return jsonify({"message": "Feedback submitted successfully!"}), 200
     return jsonify({"message": "Feedback cannot be empty!"}), 400
+
+# Endpoint to download ranked results
+@app.route("/download_csv", methods=["GET"])
+def download_csv():
+    try:
+        return send_file("ranked_resumes.csv", as_attachment=True)
+    except FileNotFoundError:
+        return jsonify({"error": "Ranked results not found."}), 404
 
 if __name__ == "__main__":
     app.run(debug=True)

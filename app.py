@@ -6,8 +6,12 @@ from sklearn.metrics.pairwise import cosine_similarity
 import re
 import os
 import csv
+from flask_caching import Cache
 
 app = Flask(__name__)
+
+# Configure caching
+cache = Cache(app, config={'CACHE_TYPE': 'redis', 'CACHE_DEFAULT_TIMEOUT': 300})
 
 # Load spaCy NER model with error handling
 try:
@@ -77,6 +81,12 @@ def index():
         results.extend(ranked_resumes)
 
     return render_template('index.html', results=results)
+
+@cache.cached(timeout=300, query_string=True)
+@app.route('/ranked_resumes')
+def get_ranked_resumes():
+    global results
+    return {"results": results}
 
 @app.route('/feedback', methods=['POST'])
 def feedback():

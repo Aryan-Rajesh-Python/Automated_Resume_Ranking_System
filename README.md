@@ -8,6 +8,8 @@ experience.
 - Utilizes machine learning and natural language processing to rank resumes based 
 on their relevance to job descriptions.
 
+- SpaCy extracts key information from resumes while scikit-learn ranks them based on relevance to job descriptions.
+
 - Supports bulk uploads of multiple PDF resumes for simultaneous analysis.
 
 - Allows users to input job descriptions to tailor the ranking process based on 

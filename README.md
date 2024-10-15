@@ -12,6 +12,8 @@ on their relevance to job descriptions.
 
 - Supports bulk uploads of multiple PDF resumes for simultaneous analysis.
 
+- Alerts users to fill out required fields (Job Description, Resume Upload) and ensure valid PDF uploads.
+
 - Allows users to input job descriptions to tailor the ranking process based on 
 specific requirements.
 

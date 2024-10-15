@@ -24,7 +24,9 @@ record-keeping.
 - Features a toggle for dark mode, enhancing user experience during late-night 
 usage.
 
-- Users can give their feedback and we use that for our future enhancements.
+- Users can give their feedback and we use that for our future enhancements and they can also download 
+their feedback which was stored in a csv file.
+
 
 ## :wrench: Setup and Usage
 

@@ -13,7 +13,7 @@ on their relevance to job descriptions.
 - Allows users to input job descriptions to tailor the ranking process based on 
 specific requirements.
 
-- Calculates similarity scores between resumes and job descriptions, providing 
+- Calculates similarity scores between resumes and job descriptions, providing rank 
 insights into candidate fit.
 
 - Enables users to download the ranking results in CSV format for further review or 
@@ -21,6 +21,8 @@ record-keeping.
 
 - Features a toggle for dark mode, enhancing user experience during late-night 
 usage.
+
+- User can give their feedback and we use that for our future enhancements.
 
 ## :wrench: Setup and Usage
 

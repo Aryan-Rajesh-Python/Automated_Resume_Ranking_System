@@ -1,83 +1,303 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resume Ranking System</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" id="theme-style">
     <style>
-        /* Define your dark theme styles here */
+        /* Global Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
         body.dark-mode {
-            background-color: #1a1a1a;
+            background: linear-gradient(135deg, #1f1c2c, #928DAB);
             color: #ffffff;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            text-align: center;
+            color: #007bff;
+            transition: color 0.3s;
+        }
+
+        h1:hover {
+            color: #0056b3;
+        }
+
+        /* Centered Heading Styles */
+        h2,
+        h3 {
+            text-align: center; /* Center the headings */
+            margin: 20px 0; /* Add margin for spacing */
+            font-size: 1.8rem; /* Adjust the font size */
+            color: #007bff; /* Color to match the theme */
+        }
+
+        /* Card Styles */
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            margin: 20px 0;
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Form Styles */
+        label {
+            font-weight: bold;
+            margin: 10px 0 5px;
+            display: block;
+            color: #333;
+            text-align: center; /* Center the label text */
+        }
+
+        textarea,
+        input[type="file"],
+        input[type="submit"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            transition: border 0.3s;
+            display: block; /* Ensure block display for centering */
+            margin-left: auto; /* Center horizontally */
+            margin-right: auto; /* Center horizontally */
+        }
+
+        textarea:focus,
+        input[type="file"]:focus,
+        input[type="submit"]:focus {
+            border: 1px solid #007bff;
+            outline: none;
+        }
+
+        input[type="submit"] {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 15px;
+            border-radius: 8px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+            transform: scale(1.05);
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            margin: 20px 0;
+            border-collapse: collapse;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Download Link Styles */
+        .download-link {
+            display: inline-block;
+            padding: 10px 15px;
+            margin: 10px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .download-link:hover {
+            background-color: #0056b3;
+        }
+
+        /* Feedback Section */
+        .feedback-section {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        /* Dark Mode Toggle */
+        #dark-mode-toggle {
+            margin: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toggle-text {
+            margin-left: 10px;
+            font-weight: bold;
+        }
+
+        /* Dark Mode Table Styles */
+        body.dark-mode table {
+            background-color: #2c2c2c; /* Darker background for the table */
+            color: #ffffff; /* White text for readability */
+        }
+
+        body.dark-mode th {
+            background-color: #444; /* Darker header background */
+            color: #ffffff; /* Ensure header text is visible */
+        }
+
+        body.dark-mode td {
+            background-color: #3a3a3a; /* Slightly lighter for contrast */
+            color: #ffffff; /* Ensure cell text is visible */
+        }
+
+        body.dark-mode tr:hover {
+            background-color: #555; /* Hover effect for rows */
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .card {
+                width: 95%;
+            }
+
+            input[type="submit"] {
+                padding: 12px;
+                font-size: 1rem;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
         }
     </style>
     <script>
-        function toggleDarkMode() {
+        // Function to set the theme based on localStorage
+        function setTheme() {
             const body = document.body;
-            const themeStyleLink = document.getElementById('theme-style');
-
-            // Add an event listener for the 'transitionend' event
-            themeStyleLink.addEventListener('transitionend', () => {
-                // Update the theme link after the transition is complete
-                themeStyleLink.removeEventListener('transitionend', arguments.callee);
-                themeStyleLink.href = body.classList.contains('dark-mode')
-                    ? "{{ url_for('static', filename='styles.css') }}"
-                    : "{{ url_for('static', filename='dark-theme.css') }}";
-            });
-
-            // Toggle the dark mode class
-            body.classList.toggle('dark-mode');
+            const isDarkMode = localStorage.getItem('darkMode') === 'true';
+            if (isDarkMode) {
+                body.classList.add('dark-mode');
+            }
         }
 
+        function toggleDarkMode() {
+            const body = document.body;
+            body.classList.toggle('dark-mode');
 
+            // Update localStorage with the new theme state
+            localStorage.setItem('darkMode', body.classList.contains('dark-mode'));
+        }
+
+        // Call setTheme when the page loads
+        window.onload = setTheme;
     </script>
 </head>
 
 <body>
-    <center>
-        <h1>Resume Ranking System</h1>
-    </center>
-    <label id="dark-mode-toggle-label" for="dark-mode-toggle">
-        <input type="checkbox" id="dark-mode-toggle" onchange="toggleDarkMode()">
-        <div id="dark-mode-toggle-slider"></div>
-    </label>
+    <h1 class="fade-in">Resume Ranking System</h1>
 
-    <form action="/" method="post" enctype="multipart/form-data">
-        <label for="job_description">Job Description:</label>
-        <textarea name="job_description" rows="4" cols="50" required></textarea>
-        <br>
-        <label for="resume_files">Upload Resumes (PDF):</label>
-        <input type="file" name="resume_files" accept=".pdf" multiple required>
-        <br>
-        <input type="submit" value="Analyze Resumes">
-    </form>
-    <br>
+    <div id="dark-mode-toggle">
+        <input type="checkbox" id="toggle-dark-mode" onchange="toggleDarkMode()">
+        <span class="toggle-text">Toggle Dark Mode</span>
+    </div>
+
+    <div class="card fade-in">
+        <form action="/" method="post" enctype="multipart/form-data">
+            <label for="job_description">Job Description</label>
+            <textarea name="job_description" rows="4" required placeholder="Enter job description here..."></textarea>
+
+            <label for="resume_files">Upload Resumes (PDF)</label>
+            <input type="file" name="resume_files" accept=".pdf" multiple required>
+
+            <input type="submit" value="Analyze Resumes">
+        </form>
+    </div>
+
     {% if results %}
-    <h2>Ranked Resumes:</h2>
-    <table>
-        <tr>
-            <th>Rank</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Similarity in %</th>
-        </tr>
-        {% for result in results %}
-        <tr>
-            <td>{{ loop.index }}</td>
-            <td>{{ result[0][0] }}</td>
-            <td>{{ result[1][0] }}</td>
-            <td>{{ result[2] }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    {% if results %}
-    <br>
-    <a href="{{ url_for('download_csv') }}" download="ranked_resumes.csv" class="download-link">
-        Download CSV
-    </a>
+    <div class="card fade-in">
+        <h2>Ranked Resumes</h2> <!-- Centered heading for Ranked Resumes -->
+        <table>
+            <tr>
+                <th>Rank</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Similarity (%)</th>
+            </tr>
+            {% for result in results %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ result[0][0] }}</td>
+                <td>{{ result[1][0] }}</td>
+                <td>{{ '{:.2f}'.format(result[2]) }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <a href="/download_csv" class="download-link">Download Results as CSV</a>
 
-    {% endif %}
-
+        <div class="feedback-section">
+            <h3>Submit Feedback</h3> <!-- Centered heading for Feedback -->
+            <form action="/feedback" method="post">
+                <textarea name="feedback" rows="4" required placeholder="Your feedback..."></textarea>
+                <br>
+                <input type="submit" value="Submit Feedback">
+            </form>
+            <h3>Feedback</h3> <!-- Centered heading for Feedback Section -->
+            <a href="/download_feedback" class="download-link">Download Feedback as CSV</a>
+        </div>
+    </div>
     {% endif %}
 </body>
 

@@ -5,6 +5,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 import re
 import os
+import csv
 
 app = Flask(__name__)
 
@@ -14,8 +15,9 @@ try:
 except OSError as e:
     print("Error loading spaCy model: ", e)
 
-# Initialize results variable
+# Initialize results and feedback variables
 results = []
+feedbacks = []
 
 # Extract text from PDFs
 def extract_text_from_pdf(pdf_path):
@@ -23,7 +25,7 @@ def extract_text_from_pdf(pdf_path):
         pdf_reader = PyPDF2.PdfReader(pdf_file)
         text = ""
         for page in pdf_reader.pages:
-            text += page.extract_text()
+            text += page.extract_text() or ""
         return text
 
 # Extract entities using regex
@@ -76,6 +78,33 @@ def index():
 
     return render_template('index.html', results=results)
 
+@app.route('/feedback', methods=['POST'])
+def feedback():
+    global feedbacks  # Use the global feedback variable
+    feedback_text = request.form['feedback']
+    feedbacks.append(feedback_text)  # Store feedback
+    return "Feedback submitted successfully!"
+
+@app.route('/download_feedback')
+def download_feedback():
+    global feedbacks  # Use the global feedback variable
+    if not feedbacks:
+        return "No feedback available to download."
+
+    # Generate the CSV content
+    feedback_csv_content = "Feedback\n"
+    for feedback in feedbacks:
+        feedback_csv_content += f"{feedback}\n"
+
+    # Create a temporary file to store the feedback content
+    feedback_filename = "feedback.csv"
+    with open(feedback_filename, "w", encoding='utf-8') as feedback_file:
+        feedback_file.write(feedback_csv_content)
+
+    # Send the file for download
+    feedback_full_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), feedback_filename)
+    return send_file(feedback_full_path, as_attachment=True, download_name="feedback.csv")
+
 @app.route('/download_csv')
 def download_csv():
     global results  # Use the global results variable
@@ -89,7 +118,7 @@ def download_csv():
         email = emails[0] if emails else "N/A"
         csv_content += f"{rank},{name},{email},{similarity:.2f}\n"
 
-    # Create a temporary file to store the CSV content with UTF-8 encoding
+    # Create a temporary file to store the CSV content
     csv_filename = "ranked_resumes.csv"
     with open(csv_filename, "w", encoding='utf-8') as csv_file:
         csv_file.write(csv_content)

@@ -16,7 +16,7 @@ specific requirements.
 - Calculates similarity scores between resumes and job descriptions, providing rank 
 insights into candidate fit.
 
-- Enables users to download the ranking results in CSV format for further review or 
+- Enables users to download the ranked resume score results in CSV format for further review or 
 record-keeping.
 
 - Features a toggle for dark mode, enhancing user experience during late-night 
